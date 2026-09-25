@@ -115,13 +115,15 @@ Health: http://localhost:3001/health
 | `NODE_ENV` | Yes | `development` or `production` |
 | `PORT` | No | Backend port (default: 3001) |
 | `DATABASE_URL` | Yes | PostgreSQL connection string |
-| `JWT_SECRET` | Yes | Random secret for session signing (32+ chars) |
+| `ADMIN_EMAIL` | Optional | Admin account email for production seed |
+| `ADMIN_PASSWORD` | Optional | Admin account password for production seed |
+| `SESSION_TTL_HOURS` | No | Session cookie TTL in hours (default: 24) |
 | `DISCORD_APPLICATION_ID` | Yes | From Discord Developer Portal |
 | `DISCORD_PUBLIC_KEY` | Yes | From Discord Developer Portal |
 | `DISCORD_BOT_TOKEN` | Yes | Bot token from Discord Developer Portal |
 | `DISCORD_GUILD_ID` | Dev | Guild ID for instant command registration |
-| `DISCORD_CLIENT_ID` | OAuth | For future OAuth2 Add to Server flow |
-| `DISCORD_CLIENT_SECRET` | OAuth | For future OAuth2 Add to Server flow |
+| `DISCORD_CLIENT_ID` | OAuth | For Discord OAuth2 Add to Server flow |
+| `DISCORD_CLIENT_SECRET` | OAuth | For Discord OAuth2 Add to Server flow |
 | `MIRROR_DISCORD_WEBHOOK_URL` | Optional | Default mirror webhook (can also set per-server in dashboard) |
 | `AI_PROVIDER` | Stretch | `gemini` or `groq` |
 | `AI_API_KEY` | Stretch | AI provider API key |
@@ -136,25 +138,51 @@ Health: http://localhost:3001/health
 Migrations are in `backend/migrations/` and are applied in order.
 The `schema_migrations` table tracks which have been applied.
 
-## Discord Setup
+## Discord Developer Portal Setup
 
-1. Go to https://discord.com/developers/applications
-2. Create a new application
-3. Under **General Information**: copy **Application ID** and **Public Key**
-4. Under **Bot**: create a bot, copy the **Token**
+Follow these exact steps to connect your bot:
+
+1. Go to the [Discord Developer Portal](https://discord.com/developers/applications).
+2. Click **New Application** and enter a name (e.g. `Bot Dashboard`).
+3. Under **General Information**:
+   - Copy the **Application ID** → set as `DISCORD_APPLICATION_ID` in `.env`.
+   - Copy the **Public Key** → set as `DISCORD_PUBLIC_KEY` in `.env`.
+4. Under **Bot**:
+   - Click **Reset Token** or create a bot token.
+   - Copy the **Bot Token** → set as `DISCORD_BOT_TOKEN` in `.env`.
 5. Under **OAuth2 → URL Generator**:
-   - Scopes: `bot`, `applications.commands`
-   - Permissions: `Send Messages`, `Use Slash Commands`
-   - Copy the generated URL and use it to invite the bot to your server
-6. Set `DISCORD_APPLICATION_ID`, `DISCORD_PUBLIC_KEY`, `DISCORD_BOT_TOKEN` in `.env`
-7. Run `npm run migrate` to create the database tables
-8. Run `npm run register-commands` to register `/status` and `/report` in your guild
-9. In the Discord Developer Portal → **Interactions Endpoint URL**: set to `https://<your-backend-url>/api/v1/discord/interactions`
+   - Scopes: select `bot` and `applications.commands`.
+   - Bot Permissions: select `Send Messages`, `Embed Links`, `Use Slash Commands`.
+   - Copy the generated URL and open it in your browser to invite the bot to your Discord server.
+6. Copy your test server's **Guild ID** (Enable Developer Mode in Discord settings -> Right-click server -> Copy Server ID) → set as `DISCORD_GUILD_ID` in `.env`.
+7. Run migrations and register slash commands:
+   ```bash
+   cd backend
+   npm run migrate
+   npm run discord:register
+   ```
+8. Set the **Interactions Endpoint URL**:
+   - Production: `https://<your-backend-domain>/api/v1/discord/interactions`
+   - Local Development (using Cloudflare Tunnel, see below): `https://<tunnel-domain>/api/v1/discord/interactions`
+   - Discord will immediately issue a `PING` request; if configured properly, it will respond with `{ type: 1 }` and display **"All changes saved!"**.
 
-### Global vs Guild Commands
+### Local Development Tunnel (Free Option)
 
-- **Guild commands** (development): `DISCORD_GUILD_ID=<id> npm run register-commands` — appears immediately
-- **Global commands** (production): `npm run register-commands` without `DISCORD_GUILD_ID` — may take up to 1 hour
+Discord requires a publicly reachable HTTPS endpoint to deliver interactions. To test locally:
+
+1. Install Cloudflare Tunnel (`cloudflared`):
+   - Windows: `winget install --id Cloudflare.cloudflared` or download binary from GitHub.
+2. Run tunnel targeting backend port `3001`:
+   ```bash
+   cloudflared tunnel --url http://localhost:3001
+   ```
+3. Copy the output HTTPS URL (e.g. `https://random-name.trycloudflare.com`).
+4. Paste `https://random-name.trycloudflare.com/api/v1/discord/interactions` into the Discord Developer Portal **Interactions Endpoint URL**.
+
+### Global vs Guild Slash Commands
+
+- **Guild commands** (development): `DISCORD_GUILD_ID=<id> npm run discord:register` — registers commands in your guild instantly.
+- **Global commands** (production): `npm run discord:register` without `DISCORD_GUILD_ID` — registers commands globally across all guilds (may take up to 1 hour to propagate).
 
 ## Deployment
 

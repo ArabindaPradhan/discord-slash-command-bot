@@ -10,6 +10,7 @@
     "migrate": "ts-node src/scripts/migrate.ts",
     "migrate:prod": "node -e \"require('./dist/scripts/migrate')\"",
     "register-commands": "ts-node -e \"const {discordApiClient} = require('./src/integrations/discord/discordApiClient'); discordApiClient.registerSlashCommands(process.env.DISCORD_GUILD_ID).then(() => process.exit(0)).catch(e => { console.error(e); process.exit(1); })\"",
+    "discord:register": "npm run register-commands",
     "test": "jest --config jest.config.js --passWithNoTests",
     "test:watch": "jest --config jest.config.js --watch",
     "test:coverage": "jest --config jest.config.js --coverage"
@@ -26,7 +27,6 @@
     "express": "^5.2.1",
     "express-rate-limit": "^8.7.0",
     "helmet": "^8.3.0",
-    "jsonwebtoken": "^9.0.3",
     "pg": "^8.23.0",
     "tweetnacl": "^1.0.3",
     "uuid": "^14.0.2",
@@ -38,7 +38,6 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
-    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.6.2",
     "@types/pg": "^8.23.1",
     "@types/supertest": "^7.2.1",

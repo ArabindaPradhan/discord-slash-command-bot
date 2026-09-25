@@ -2,6 +2,7 @@ import { DiscordInteractionPayload, DiscordInteractionResponse } from '../../typ
 import { interactionRepository, actionLogRepository } from '../../repositories/interactionRepository';
 import { discordServerRepository, commandConfigRepository } from '../../repositories/discordRepository';
 import { discordApiClient } from './discordApiClient';
+import { config } from '../../config';
 import { logger } from '../../utils/logger';
 
 /**
@@ -58,6 +59,23 @@ async function handleSlashCommand(
   const userId = discordUser?.id ?? null;
   const username = discordUser?.username ?? discordUser?.global_name ?? null;
 
+  // 1. Application ID validation (Section 9)
+  if (
+    config.discord.applicationId &&
+    payload.application_id &&
+    payload.application_id !== config.discord.applicationId
+  ) {
+    logger.warn('Application ID mismatch', {
+      operation: 'discord_interaction',
+      expected: config.discord.applicationId,
+      received: payload.application_id,
+    });
+    return {
+      type: 4,
+      data: { content: 'Invalid application ID.' },
+    };
+  }
+
   // Extract text option for /report
   const inputText = payload.data?.options
     ?.find(o => o.name === 'text')
@@ -75,6 +93,21 @@ async function handleSlashCommand(
   let discordServer = null;
   if (guildId) {
     discordServer = await discordServerRepository.findByGuildId(guildId);
+  }
+
+  // Section 25: Unregistered server check
+  if (guildId && !discordServer) {
+    logger.warn('Slash command from unregistered server', {
+      operation: 'discord_interaction',
+      guildId,
+      command: commandName,
+    });
+    return {
+      type: 4,
+      data: {
+        content: 'This Discord server has not been configured in the bot dashboard yet. Please connect the server in the dashboard first.',
+      },
+    };
   }
 
   // Idempotent insert — the DB UNIQUE constraint protects against race conditions
@@ -209,7 +242,10 @@ async function performMirror(
   },
 ): Promise<void> {
   try {
-    const webhookUrl = await discordServerRepository.getWebhookUrl(context.discordServerId);
+    let webhookUrl = await discordServerRepository.getWebhookUrl(context.discordServerId);
+    if (!webhookUrl && config.discord.mirrorWebhookUrl) {
+      webhookUrl = config.discord.mirrorWebhookUrl;
+    }
 
     if (!webhookUrl) {
       await interactionRepository.updateStatus(interactionDbId, {

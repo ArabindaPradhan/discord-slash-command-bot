@@ -8,7 +8,6 @@ jest.mock('../src/config', () => ({
     env: 'test',
     port: 3002,
     database: { url: 'postgresql://test:test@localhost/testdb', ssl: false },
-    jwt: { secret: 'test-secret-32-chars-minimum-ok!', expiresIn: '24h' },
     session: { ttlHours: 24 },
     discord: {
       applicationId: '1234567890',

@@ -23,11 +23,6 @@ export const config = {
     ssl: optionalEnv('NODE_ENV', 'development') === 'production',
   },
 
-  jwt: {
-    secret: requireEnv('JWT_SECRET'),
-    expiresIn: optionalEnv('JWT_EXPIRES_IN', '24h'),
-  },
-
   session: {
     // Session token TTL in hours
     ttlHours: parseInt(optionalEnv('SESSION_TTL_HOURS', '24'), 10),
