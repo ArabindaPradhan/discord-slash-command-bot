@@ -292,14 +292,14 @@ async function performMirror(
 
     logger.info('Mirror webhook sent', {
       operation: 'discord_mirror',
-      interactionId: interactionDbId,
+      interactionDbId,
     });
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : String(err);
 
     logger.error('Mirror webhook failed', {
       operation: 'discord_mirror',
-      interactionId: interactionDbId,
+      interactionDbId,
       error: errorMessage,
     });
 

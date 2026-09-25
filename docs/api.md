@@ -390,7 +390,7 @@ Register slash commands with Discord.
 { "guild_id": "123456789012345678" }
 ```
 
-If `guild_id` is omitted, uses the `DISCORD_GUILD_ID` environment variable or registers globally.
+If `guild_id` is omitted, uses the `DISCORD_TEST_GUILD_ID` environment variable or registers globally.
 
 **Response (200):**
 ```json

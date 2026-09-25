@@ -9,8 +9,7 @@
     "dev": "nodemon --watch src --ext ts --exec ts-node src/server.ts",
     "migrate": "ts-node src/scripts/migrate.ts",
     "migrate:prod": "node -e \"require('./dist/scripts/migrate')\"",
-    "register-commands": "ts-node -e \"const {discordApiClient} = require('./src/integrations/discord/discordApiClient'); discordApiClient.registerSlashCommands(process.env.DISCORD_GUILD_ID).then(() => process.exit(0)).catch(e => { console.error(e); process.exit(1); })\"",
-    "discord:register": "npm run register-commands",
+    "discord:register": "ts-node src/scripts/registerDiscordCommands.ts",
     "test": "jest --config jest.config.js --passWithNoTests",
     "test:watch": "jest --config jest.config.js --watch",
     "test:coverage": "jest --config jest.config.js --coverage"

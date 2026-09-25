@@ -89,7 +89,7 @@ npm run migrate
 
 ```bash
 cd backend
-DISCORD_GUILD_ID=<your-guild-id> npm run register-commands
+npm run discord:register
 ```
 
 ### 5. Start the application
@@ -121,7 +121,7 @@ Health: http://localhost:3001/health
 | `DISCORD_APPLICATION_ID` | Yes | From Discord Developer Portal |
 | `DISCORD_PUBLIC_KEY` | Yes | From Discord Developer Portal |
 | `DISCORD_BOT_TOKEN` | Yes | Bot token from Discord Developer Portal |
-| `DISCORD_GUILD_ID` | Dev | Guild ID for instant command registration |
+| `DISCORD_TEST_GUILD_ID` | Dev | Guild ID for instant command registration |
 | `DISCORD_CLIENT_ID` | OAuth | For Discord OAuth2 Add to Server flow |
 | `DISCORD_CLIENT_SECRET` | OAuth | For Discord OAuth2 Add to Server flow |
 | `MIRROR_DISCORD_WEBHOOK_URL` | Optional | Default mirror webhook (can also set per-server in dashboard) |
@@ -154,7 +154,7 @@ Follow these exact steps to connect your bot:
    - Scopes: select `bot` and `applications.commands`.
    - Bot Permissions: select `Send Messages`, `Embed Links`, `Use Slash Commands`.
    - Copy the generated URL and open it in your browser to invite the bot to your Discord server.
-6. Copy your test server's **Guild ID** (Enable Developer Mode in Discord settings -> Right-click server -> Copy Server ID) → set as `DISCORD_GUILD_ID` in `.env`.
+6. Copy your test server's **Guild ID** (Enable Developer Mode in Discord settings -> Right-click server -> Copy Server ID) → set as `DISCORD_TEST_GUILD_ID` in `.env`.
 7. Run migrations and register slash commands:
    ```bash
    cd backend
@@ -181,8 +181,7 @@ Discord requires a publicly reachable HTTPS endpoint to deliver interactions. To
 
 ### Global vs Guild Slash Commands
 
-- **Guild commands** (development): `DISCORD_GUILD_ID=<id> npm run discord:register` — registers commands in your guild instantly.
-- **Global commands** (production): `npm run discord:register` without `DISCORD_GUILD_ID` — registers commands globally across all guilds (may take up to 1 hour to propagate).
+- **Guild commands** (development): `npm run discord:register` (uses `DISCORD_TEST_GUILD_ID` configured in `.env`) — registers commands in your test guild instantly.
 
 ## Deployment
 

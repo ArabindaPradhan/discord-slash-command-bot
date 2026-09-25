@@ -108,7 +108,7 @@ export const discordController = {
   async registerCommands(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { guild_id } = req.body as { guild_id?: string };
-      await discordApiClient.registerSlashCommands(guild_id ?? config.discord.guildId ?? undefined);
+      await discordApiClient.registerSlashCommands(guild_id ?? config.discord.testGuildId ?? undefined);
       res.status(200).json({ success: true, message: 'Commands registered successfully' });
     } catch (err) {
       next(err);

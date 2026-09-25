@@ -19,7 +19,7 @@ export const config = {
   port: parseInt(optionalEnv('PORT', '3001'), 10),
 
   database: {
-    url: requireEnv('DATABASE_URL'),
+    url: optionalEnv('DATABASE_URL'),
     ssl: optionalEnv('NODE_ENV', 'development') === 'production',
   },
 
@@ -36,7 +36,7 @@ export const config = {
     clientSecret: optionalEnv('DISCORD_CLIENT_SECRET'),
     redirectUri: optionalEnv('DISCORD_REDIRECT_URI'),
     mirrorWebhookUrl: optionalEnv('MIRROR_DISCORD_WEBHOOK_URL'),
-    guildId: optionalEnv('DISCORD_GUILD_ID'),
+    testGuildId: optionalEnv('DISCORD_TEST_GUILD_ID'),
   },
 
   ai: {
