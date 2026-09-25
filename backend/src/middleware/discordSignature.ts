@@ -86,6 +86,22 @@ export function verifyDiscordSignature(
     return;
   }
 
+  // Verify timestamp freshness to protect against replay attacks (5 minute window)
+  const timestampNum = parseInt(timestamp, 10);
+  const now = Math.floor(Date.now() / 1000);
+  const MAX_TIMESTAMP_AGE_SECONDS = 300; // 5 minutes
+
+  if (isNaN(timestampNum) || Math.abs(now - timestampNum) > MAX_TIMESTAMP_AGE_SECONDS) {
+    logger.warn('Discord signature timestamp expired or invalid', {
+      operation: 'discord_sig_verify',
+      status: 'rejected',
+      reason: 'invalid_timestamp',
+      timestamp,
+    });
+    res.status(401).json({ error: 'Invalid request timestamp' });
+    return;
+  }
+
   if (!req.rawBody) {
     logger.error('Raw body not available for signature verification', {
       operation: 'discord_sig_verify',

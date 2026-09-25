@@ -7,7 +7,8 @@ const router = Router();
 // All dashboard routes require authentication
 router.use(authenticate, requireAdmin);
 
-// GET /api/v1/dashboard/stats
+// GET /api/v1/dashboard/stats or /api/v1/stats
+router.get('/dashboard/stats', dashboardController.getStats);
 router.get('/stats', dashboardController.getStats);
 
 // GET /api/v1/interactions

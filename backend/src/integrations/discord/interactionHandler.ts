@@ -94,10 +94,6 @@ async function handleSlashCommand(
       interactionId: payload.id,
       command: commandName,
     });
-    await interactionRepository.updateStatus(interaction.id, {
-      status: 'duplicate',
-      completed_at: new Date(),
-    });
     return {
       type: 4,
       data: { content: 'This interaction was already processed.' },

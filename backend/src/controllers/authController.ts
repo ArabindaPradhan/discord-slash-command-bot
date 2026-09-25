@@ -11,6 +11,7 @@ function cookieOptions(expiresAt: Date) {
     secure: config.env === 'production',
     sameSite: 'lax' as const,
     expires: expiresAt,
+    maxAge: config.session.ttlHours * 60 * 60 * 1000,
     path: '/',
   };
 }
@@ -20,27 +21,28 @@ export const authController = {
     try {
       const { email, password } = req.body as { email?: string; password?: string };
 
-      if (!email || !password) {
+      if (!email || !password || typeof email !== 'string' || typeof password !== 'string') {
         res.status(400).json({ success: false, error: 'Email and password are required' });
         return;
       }
 
-      if (typeof email !== 'string' || typeof password !== 'string') {
-        res.status(400).json({ success: false, error: 'Invalid input' });
+      const trimmedEmail = email.trim();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(trimmedEmail)) {
+        res.status(400).json({ success: false, error: 'Invalid email format' });
         return;
       }
 
-      const result = await authService.login(email, password);
+      const result = await authService.login(trimmedEmail, password);
 
       // Set HttpOnly cookie for browser clients
       res.cookie(COOKIE_NAME, result.token, cookieOptions(result.expiresAt));
 
+      // Return user info ONLY — never expose session token or internal database IDs in JSON
       res.status(200).json({
         success: true,
         data: {
           user: result.user,
-          token: result.token,  // Also return token for API clients
-          expiresAt: result.expiresAt,
         },
       });
     } catch (err) {

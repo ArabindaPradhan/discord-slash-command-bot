@@ -161,6 +161,38 @@ describe('Discord Signature Verification', () => {
 
       expect(res.status).toBe(401);
     });
+
+    it('should return 401 for an expired timestamp (>5 minutes old)', async () => {
+      const body = JSON.stringify({ type: 1, id: 'expired-ts', application_id: '123', token: 'test', version: 1 });
+      const oldTimestamp = (Math.floor(Date.now() / 1000) - 600).toString(); // 10 minutes ago
+      const signature = signBody(body, oldTimestamp);
+
+      const res = await request(app)
+        .post(ENDPOINT)
+        .set('Content-Type', 'application/json')
+        .set('X-Signature-Ed25519', signature)
+        .set('X-Signature-Timestamp', oldTimestamp)
+        .send(body);
+
+      expect(res.status).toBe(401);
+      expect(res.body).toEqual({ error: 'Invalid request timestamp' });
+    });
+
+    it('should return 401 for a malformed non-numeric timestamp', async () => {
+      const body = JSON.stringify({ type: 1, id: 'bad-ts', application_id: '123', token: 'test', version: 1 });
+      const invalidTimestamp = 'not-a-timestamp';
+      const signature = signBody(body, invalidTimestamp);
+
+      const res = await request(app)
+        .post(ENDPOINT)
+        .set('Content-Type', 'application/json')
+        .set('X-Signature-Ed25519', signature)
+        .set('X-Signature-Timestamp', invalidTimestamp)
+        .send(body);
+
+      expect(res.status).toBe(401);
+      expect(res.body).toEqual({ error: 'Invalid request timestamp' });
+    });
   });
 
   describe('Missing signature headers', () => {

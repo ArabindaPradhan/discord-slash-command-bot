@@ -78,6 +78,26 @@ async function migrate(): Promise<void> {
     }
 
     console.log(`\nMigrations complete. Applied: ${appliedCount}, Skipped: ${files.length - appliedCount}`);
+
+    // Dynamic Admin Setup via environment variables
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const adminPassword = process.env.ADMIN_PASSWORD;
+
+    if (adminEmail && adminPassword) {
+      console.log(`[SEED] Setting up configured admin user: ${adminEmail}`);
+      const bcrypt = require('bcrypt') as typeof import('bcrypt');
+      const hash = await bcrypt.hash(adminPassword, 12);
+
+      await client.query(
+        `INSERT INTO users (email, password_hash, role)
+         VALUES ($1, $2, 'admin')
+         ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash`,
+        [adminEmail, hash],
+      );
+      console.log(`[SEED] Configured admin user setup successful.`);
+    } else if (process.env.NODE_ENV === 'production') {
+      console.warn('[SECURITY WARNING] ADMIN_EMAIL and ADMIN_PASSWORD environment variables are not set. Default development admin seed may be active. Set ADMIN_EMAIL and ADMIN_PASSWORD in production!');
+    }
   } finally {
     client.release();
     await pool.end();
