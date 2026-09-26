@@ -1,6 +1,17 @@
-// API base URL — default to relative /api/v1, or allow VITE_API_URL prefix in production
-const rawApiUrl = (import.meta.env.VITE_API_URL as string | undefined)?.trim() ?? '';
-const API_BASE = rawApiUrl ? `${rawApiUrl.replace(/\/+$/, '')}/api/v1` : '/api/v1';
+// API base URL — format VITE_API_URL or default to relative /api/v1
+export function formatApiBaseUrl(envUrl?: string): string {
+  const trimmed = envUrl?.trim();
+  if (!trimmed) {
+    return '/api/v1';
+  }
+  const cleanUrl = trimmed.replace(/\/+$/, '');
+  if (cleanUrl.endsWith('/api/v1')) {
+    return cleanUrl;
+  }
+  return `${cleanUrl}/api/v1`;
+}
+
+export const API_BASE = formatApiBaseUrl(import.meta.env.VITE_API_URL as string | undefined);
 
 export interface ApiResponse<T = unknown> {
   success: boolean;

@@ -20,7 +20,7 @@ jest.mock('../src/config', () => ({
       guildId: '',
     },
     ai: { provider: 'gemini', apiKey: '' },
-    cors: { origin: 'http://localhost:5173' },
+    cors: { origin: ['http://localhost:5173', 'https://discord-slash-command-bot.netlify.app'] },
     rateLimit: { windowMs: 900000, max: 100 },
   },
 }));
@@ -324,6 +324,34 @@ describe('Authentication & Session Security Tests', () => {
       expect(dataStr).not.toContain('valid_token');
       expect(res.body.data.id).toBeUndefined();
       expect(res.body.data.password_hash).toBeUndefined();
+    });
+  });
+
+  describe('CORS & Cross-Origin Security Tests', () => {
+    it('19. allows Netlify production origin with credentials', async () => {
+      const res = await request(app)
+        .options('/api/v1/auth/login')
+        .set('Origin', 'https://discord-slash-command-bot.netlify.app');
+
+      expect(res.get('access-control-allow-origin')).toBe('https://discord-slash-command-bot.netlify.app');
+      expect(res.get('access-control-allow-credentials')).toBe('true');
+    });
+
+    it('20. retains localhost development origin with credentials', async () => {
+      const res = await request(app)
+        .options('/api/v1/auth/login')
+        .set('Origin', 'http://localhost:5173');
+
+      expect(res.get('access-control-allow-origin')).toBe('http://localhost:5173');
+      expect(res.get('access-control-allow-credentials')).toBe('true');
+    });
+
+    it('21. rejects unauthorized origins', async () => {
+      const res = await request(app)
+        .options('/api/v1/auth/login')
+        .set('Origin', 'https://unauthorized-malicious-site.com');
+
+      expect(res.get('access-control-allow-origin')).toBeUndefined();
     });
   });
 });

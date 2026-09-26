@@ -14,6 +14,18 @@ function optionalEnv(name: string, defaultValue = ''): string {
   return process.env[name] ?? defaultValue;
 }
 
+function parseCorsOrigins(rawEnv?: string): string[] {
+  const defaults = ['http://localhost:5173', 'http://localhost:3001', 'http://127.0.0.1:5173'];
+  if (!rawEnv || !rawEnv.trim()) {
+    return defaults;
+  }
+  const customOrigins = rawEnv
+    .split(',')
+    .map(o => o.trim().replace(/\/+$/, ''))
+    .filter(Boolean);
+  return Array.from(new Set([...defaults, ...customOrigins]));
+}
+
 export const config = {
   env: optionalEnv('NODE_ENV', 'development'),
   port: parseInt(optionalEnv('PORT', '3001'), 10),
@@ -45,7 +57,7 @@ export const config = {
   },
 
   cors: {
-    origin: optionalEnv('FRONTEND_URL', 'http://localhost:5173'),
+    origin: parseCorsOrigins(process.env.FRONTEND_URL),
   },
 
   rateLimit: {
