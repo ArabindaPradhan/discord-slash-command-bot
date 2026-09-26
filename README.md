@@ -198,11 +198,17 @@ Discord requires a publicly reachable HTTPS endpoint to deliver interactions. To
 5. Set all environment variables in Render dashboard
 6. Copy the Render URL → set as Discord Interactions Endpoint
 
-### Frontend — Vercel / Static Hosting
-1. Connect your GitHub repo to Vercel
-2. Set root directory to `frontend/`
+### Frontend — Netlify / Static Hosting
+1. Connect your GitHub repo to Netlify.
+2. Set base directory to `frontend/`.
 3. Build command: `npm run build`
-4. If frontend and backend are hosted on separate root domains, configure a reverse proxy / rewrite rule mapping `/api/*` to `https://<backend-domain>/api/*` to maintain Same-Site `HttpOnly` cookie security. Alternatively, set `VITE_API_URL=https://<backend-domain>` if using Bearer token authentication.
+4. Publish directory: `frontend/dist`
+5. Netlify uses `public/_redirects` to proxy `/api/*` to the Render backend domain:
+   ```text
+   /api/*  https://<backend-domain>.onrender.com/:splat  200
+   /*      /index.html  200
+   ```
+   This maintains same-origin request paths (`https://<frontend-domain>/api/v1/...`) and ensures `HttpOnly; Secure; SameSite=Lax` session cookies function reliably without cross-site cookie blocking.
 
 ## Testing
 
