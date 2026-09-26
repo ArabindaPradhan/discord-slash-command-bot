@@ -353,5 +353,13 @@ describe('Authentication & Session Security Tests', () => {
 
       expect(res.get('access-control-allow-origin')).toBeUndefined();
     });
+
+    it('22. unknown API routes return JSON 404 rather than HTML fallback', async () => {
+      const res = await request(app).get('/api/v1/nonexistent-route-path');
+      expect(res.status).toBe(404);
+      expect(res.headers['content-type']).toContain('application/json');
+      expect(res.body.success).toBe(false);
+      expect(res.body.error).toBe('Route not found');
+    });
   });
 });

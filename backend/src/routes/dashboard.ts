@@ -4,23 +4,23 @@ import { authenticate, requireAdmin } from '../middleware/auth';
 
 const router = Router();
 
-// All dashboard routes require authentication
-router.use(authenticate, requireAdmin);
+// Auth middleware for protected dashboard endpoints
+const auth = [authenticate, requireAdmin];
 
 // GET /api/v1/dashboard/stats or /api/v1/stats
-router.get('/dashboard/stats', dashboardController.getStats);
-router.get('/stats', dashboardController.getStats);
+router.get('/dashboard/stats', auth, dashboardController.getStats);
+router.get('/stats', auth, dashboardController.getStats);
 
 // GET /api/v1/interactions
-router.get('/interactions', dashboardController.listInteractions);
+router.get('/interactions', auth, dashboardController.listInteractions);
 
 // GET /api/v1/interactions/:id
-router.get('/interactions/:id', dashboardController.getInteraction);
+router.get('/interactions/:id', auth, dashboardController.getInteraction);
 
 // GET /api/v1/commands
-router.get('/commands', dashboardController.listCommandConfigs);
+router.get('/commands', auth, dashboardController.listCommandConfigs);
 
 // PATCH /api/v1/commands/:id
-router.patch('/commands/:id', dashboardController.updateCommandConfig);
+router.patch('/commands/:id', auth, dashboardController.updateCommandConfig);
 
 export default router;

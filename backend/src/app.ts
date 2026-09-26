@@ -3,12 +3,29 @@ import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
+import path from 'path';
+import fs from 'fs';
 import { config } from './config';
 import authRoutes from './routes/auth';
 import discordRoutes from './routes/discord';
 import dashboardRoutes from './routes/dashboard';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 
+function getFrontendDistPath(): string | null {
+  const possiblePaths = [
+    path.join(__dirname, '../../frontend/dist'),
+    path.join(__dirname, '../frontend/dist'),
+    path.join(process.cwd(), '../frontend/dist'),
+    path.join(process.cwd(), 'frontend/dist'),
+  ];
+
+  for (const p of possiblePaths) {
+    if (fs.existsSync(path.join(p, 'index.html'))) {
+      return p;
+    }
+  }
+  return null;
+}
 
 export function createApp(): express.Application {
   const app = express();
@@ -68,12 +85,24 @@ export function createApp(): express.Application {
     });
   });
 
-  // API routes
+  // API routes — registered BEFORE static assets & SPA fallback
   app.use('/api/v1/auth', authRoutes);
   app.use('/api/v1/discord', discordRoutes);
   app.use('/api/v1', dashboardRoutes);
 
-  // 404 and error handlers (must be last)
+  // API 404 guard — any unknown /api/* route returns JSON 404, never index.html
+  app.use('/api', notFoundHandler);
+
+  // Frontend static files & SPA fallback
+  const frontendDistPath = getFrontendDistPath();
+  if (frontendDistPath) {
+    app.use(express.static(frontendDistPath));
+    app.use((_req, res) => {
+      res.sendFile(path.join(frontendDistPath, 'index.html'));
+    });
+  }
+
+  // 404 and error handlers for unhandled routes
   app.use(notFoundHandler);
   app.use(errorHandler);
 

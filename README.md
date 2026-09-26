@@ -190,25 +190,27 @@ Discord requires a publicly reachable HTTPS endpoint to deliver interactions. To
 1. Create a project at https://neon.tech
 2. Copy the connection string to `DATABASE_URL`
 
-### Backend — Render
-1. Connect your GitHub repo to Render
-2. Create a new **Web Service** pointed at `backend/`
-3. Build command: `npm install && npm run build`
-4. Start command: `npm start`
-5. Set all environment variables in Render dashboard
-6. Copy the Render URL → set as Discord Interactions Endpoint
+### Unified Deployment on Render (Frontend + Backend on Single Service)
 
-### Frontend — Netlify / Static Hosting
-1. Connect your GitHub repo to Netlify.
-2. Set base directory to `frontend/`.
-3. Build command: `npm run build`
-4. Publish directory: `frontend/dist`
-5. Netlify uses `public/_redirects` to proxy `/api/*` to the Render backend domain:
-   ```text
-   /api/*  https://<backend-domain>.onrender.com/:splat  200
-   /*      /index.html  200
-   ```
-   This maintains same-origin request paths (`https://<frontend-domain>/api/v1/...`) and ensures `HttpOnly; Secure; SameSite=Lax` session cookies function reliably without cross-site cookie blocking.
+1. Connect your GitHub repository to [Render](https://render.com).
+2. Create a new **Web Service**.
+3. Configure the exact deployment settings:
+   - **Root Directory**: `.` (leave default / root)
+   - **Build Command**: `npm run build && npm run migrate:prod`
+   - **Start Command**: `npm start`
+4. Set required Environment Variables in Render Dashboard:
+   - `NODE_ENV`: `production`
+   - `DATABASE_URL`: `postgresql://...` (from Neon DB)
+   - `ADMIN_EMAIL`: `admin@example.com`
+   - `ADMIN_PASSWORD`: `Admin@123`
+   - `DISCORD_APPLICATION_ID`: `<your-discord-app-id>`
+   - `DISCORD_PUBLIC_KEY`: `<your-discord-public-key>`
+   - `DISCORD_BOT_TOKEN`: `<your-discord-bot-token>`
+   - `DISCORD_TEST_GUILD_ID`: `<your-discord-test-guild-id>`
+   - `FRONTEND_URL`: `https://<your-app-name>.onrender.com` (matching your Render service URL)
+5. Copy your Render service URL (e.g. `https://<your-app-name>.onrender.com`).
+6. Set the **Interactions Endpoint URL** in the Discord Developer Portal:
+   - `https://<your-app-name>.onrender.com/api/v1/discord/interactions`
 
 ## Testing
 
