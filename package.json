@@ -3,11 +3,16 @@
   "version": "1.0.0",
   "private": true,
   "description": "Discord slash-command bot with admin dashboard",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
   "scripts": {
     "install:all": "npm --prefix frontend install && npm --prefix backend install",
+    "postinstall": "npm --prefix frontend install && npm --prefix backend install",
     "build:frontend": "npm --prefix frontend run build",
     "build:backend": "npm --prefix backend run build",
-    "build": "npm run build:frontend && npm run build:backend",
+    "build": "npm run install:all && npm run build:frontend && npm run build:backend",
     "migrate:prod": "npm --prefix backend run migrate:prod",
     "register:discord": "npm --prefix backend run discord:register",
     "start": "npm --prefix backend start",
