@@ -127,7 +127,8 @@ Health: http://localhost:3001/health
 | `MIRROR_DISCORD_WEBHOOK_URL` | Optional | Default mirror webhook (can also set per-server in dashboard) |
 | `AI_PROVIDER` | Stretch | `gemini` or `groq` |
 | `AI_API_KEY` | Stretch | AI provider API key |
-| `FRONTEND_URL` | Yes | CORS origin (e.g., http://localhost:5173) |
+| `FRONTEND_URL` | Yes | CORS origin (e.g., http://localhost:5173 or https://your-domain.com) |
+| `VITE_API_URL` | Frontend | Optional frontend API URL override (defaults to relative `/api/v1`) |
 
 ## Database Setup
 
@@ -197,10 +198,11 @@ Discord requires a publicly reachable HTTPS endpoint to deliver interactions. To
 5. Set all environment variables in Render dashboard
 6. Copy the Render URL → set as Discord Interactions Endpoint
 
-### Frontend — Vercel
+### Frontend — Vercel / Static Hosting
 1. Connect your GitHub repo to Vercel
 2. Set root directory to `frontend/`
-3. Set `VITE_API_URL` if needed (defaults to relative `/api`)
+3. Build command: `npm run build`
+4. If frontend and backend are hosted on separate root domains, configure a reverse proxy / rewrite rule mapping `/api/*` to `https://<backend-domain>/api/*` to maintain Same-Site `HttpOnly` cookie security. Alternatively, set `VITE_API_URL=https://<backend-domain>` if using Bearer token authentication.
 
 ## Testing
 

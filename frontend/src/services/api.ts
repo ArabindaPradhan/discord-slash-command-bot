@@ -1,5 +1,6 @@
-// API base URL — always proxied through backend; never hardcode secrets here
-const API_BASE = '/api/v1';
+// API base URL — default to relative /api/v1, or allow VITE_API_URL prefix in production
+const rawApiUrl = (import.meta.env.VITE_API_URL as string | undefined)?.trim() ?? '';
+const API_BASE = rawApiUrl ? `${rawApiUrl.replace(/\/+$/, '')}/api/v1` : '/api/v1';
 
 export interface ApiResponse<T = unknown> {
   success: boolean;
